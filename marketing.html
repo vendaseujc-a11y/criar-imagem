@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Criacao de Imagem Simples</title>
+<style>
+body{font-family:Segoe UI,sans-serif;background:linear-gradient(135deg,#667eea,#764ba2);padding:20px;margin:0;min-height:100vh}
+h1{color:#fff;text-align:center}
+p{color:rgba(255,255,255,0.8);text-align:center}
+.card{background:#fff;border-radius:15px;padding:25px;margin:0 auto 20px;max-width:700px;box-shadow:0 10px 40px rgba(0,0,0,0.2)}
+h2{color:#333;margin:0 0 15px}
+input{width:100%;padding:12px;border:2px solid #ddd;border-radius:8px;font-size:16px;margin-bottom:12px;box-sizing:border-box}
+button{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;padding:14px 28px;border:none;border-radius:8px;cursor:pointer;font-size:15px;font-weight:600}
+.btn_estilo{background:#f0f0f0;color:#333;padding:10px 20px;border:none;border-radius:25px;margin:5px;cursor:pointer}
+.btn_estilo.on{background:#667eea;color:#fff}
+.opcao{background:#f5f5f5;padding:15px;margin:10px 0;border-radius:10px;cursor:pointer;border:2px solid transparent}
+.opcao:hover{border-color:#667eea}
+.opcao.sel{border-color:#667eea;background:#e8f0fe}
+canvas{max-width:100%;border-radius:10px;box-shadow:0 5px 20px rgba(0,0,0,0.3)}
+.btns{display:flex;gap:10px;justify-content:center;margin-top:15px}
+.btns button{min-width:120px}
+.btn_verde{background:#34a853}
+.btn_amarelo{background:#f9a825}
+#etapa1{display:block}
+#etapa2,#etapa3,#etapa4,#etapa5{display:none}
+</style>
+</head>
+<body>
+<h1>Criacao de Imagem Simples</h1>
+<p>Crie banners para redes sociais</p>
+
+<div class="card" id="etapa1">
+<h2>1. Dados do Produto</h2>
+<input type="text" id="nome" placeholder="Nome do Produto">
+<input type="text" id="preco" placeholder="Preco (ex: R$ 29,90)">
+<input type="file" id="foto" accept="image/*">
+<button onclick="etapa1()">CONTINUAR</button>
+</div>
+
+<div class="card" id="etapa2">
+<h2>2. Escolha o Estilo</h2>
+<button class="btn_estilo" onclick="estilo('escassez',this)">Escassez</button>
+<button class="btn_estilo" onclick="estilo('beneficio',this)">Beneficio</button>
+<button class="btn_estilo" onclick="estilo('atraente',this)">Atraente</button>
+<br><br>
+<button onclick="etapa2()">GERAR OPCOES</button>
+</div>
+
+<div class="card" id="etapa3">
+<h2>3. Escolha uma Opcao</h2>
+<div id="opcs"></div>
+</div>
+
+<div class="card" id="etapa4">
+<h2>4. Texto Escolhido</h2>
+<div id="txt_selecionado"></div>
+<button onclick="etapa3()">GERAR IMAGEM</button>
+</div>
+
+<div class="card" id="etapa5">
+<h2>5. Banner Pronto</h2>
+<canvas id="banner" width="1024" height="1024"></canvas>
+<div class="btns">
+<button class="btn_verde" onclick="baixa('png')">PNG</button>
+<button class="btn_amarelo" onclick="baixa('jpg')">JPG</button>
+</div>
+<button onclick="location.reload()" style="margin-top:15px;width:100%;background:#777">NOVO PROJETO</button>
+</div>
+
+<script>
+var dados = {nome:'', preco:'', foto:'', est:'', textos:[], txt:''};
+
+function etapa1(){
+    var n = document.getElementById('nome').value;
+    var p = document.getElementById('preco').value;
+    if(!n || !p){alert('Preencha nome e preco');return}
+    dados.nome = n; dados.preco = p;
+    var f = document.getElementById('foto').files[0];
+    if(f){
+        var r = new FileReader();
+        r.onload = function(e){dados.foto = e.target.result};
+        r.readAsDataURL(f);
+    }
+    mostra(1,2);
+}
+
+function estilo(tipo,btn){
+    dados.est = tipo;
+    var bs = document.querySelectorAll('.btn_estilo');
+    for(var i=0;i<bs.length;i++){bs[i].className = 'btn_estilo'}
+    btn.className = 'btn_estilo on';
+}
+
+function etapa2(){
+    if(!dados.est){alert('Escolha estilo');return}
+    dados.textos = [
+        {t:dados.nome+' - super Oferta!',l:'⚠️ ATENÇÃO: Promoção especial!\n\nGaranta já seu '+dados.nome+' por apenas R$ '+dados.preco+'\nnão fique de fora!\n\nOFERTA PROMÇÃO ESPECIAL'},
+        {t:dados.nome+' - Promoção Relâmpago!',l:'🔥 OFERTA POR TEMPO LIMITADO!\n\n'+dados.nome+' por apenas R$ '+dados.preco+'\n\nPromoção válida HOJE apenas!\n\nPROMO URGENTE'},
+        {t:dados.nome+' - Incrível Oferta!',l:'✨ O QUE VOCÊ ESTÁ ESPERANDO?\n\n'+dados.nome+' por apenas R$ '+dados.preco+'\n\nTransforme sua experiência!\n\nExperimente agora!\n\nQUALIDADE ESPECIAL'}
+    ];
+    var html = '';
+    for(var i=0;i<dados.textos.length;i++){
+        html += '<div class="opcao" id="opc'+i+'" onclick="sel('+i+')"><b>Opcao '+(i+1)+'</b><p>'+dados.textos[i].t+'</p><p style=color:#666>'+dados.textos[i].l+'</p></div>';
+    }
+    document.getElementById('opcs').innerHTML = html;
+    mostra(2,3);
+}
+
+function sel(i){
+    var ops = document.querySelectorAll('.opcao');
+    for(var j=0;j<ops.length;j++){ops[j].className = 'opcao'}
+    document.getElementById('opc'+i).className = 'opcao sel';
+    dados.txt = dados.textos[i];
+    document.getElementById('txt_selecionado').innerHTML = '<div style=background:#e8f5e9;padding:15px><b>Texto:</b><p>'+dados.txt.t+'<br>'+dados.txt.l+'</p></div>';
+    mostra(3,4);
+}
+
+function etapa3(){
+    fazBanner();
+    mostra(4,5);
+}
+
+function mostra(de,para){
+    document.getElementById('etapa'+de).style.display = 'none';
+    document.getElementById('etapa'+para).style.display = 'block';
+}
+
+function fazBanner(){
+    var c = document.getElementById('banner');
+    var x = c.getContext('2d');
+    var w = 1024, h = 1024;
+    
+    var cores = {escassez:['#1a1a2e','#16213e'],beneficio:['#1b5e20','#2e7d32'],atraente:['#6a1b9d','#9c27b0']};
+    var cor = cores[dados.est]||['#667eea','#764ba2'];
+    var g = x.createLinearGradient(0,0,w,h);
+    g.addColorStop(0,cor[0]); g.addColorStop(1,cor[1]);
+    x.fillStyle = g; x.fillRect(0,0,w,h);
+    
+    for(var i=0;i<25;i++){
+        x.fillStyle = 'rgba(255,255,255,0.06)';
+        x.beginPath();
+        x.arc(Math.random()*w,Math.random()*h,Math.random()*80+20,0,Math.PI*2);
+        x.fill();
+    }
+    
+    if(dados.foto){
+        var img = new Image();
+        img.onload = function(){
+            var ts = 320;
+            var tw = img.width, th = img.height;
+            if(tw>th){tw=ts;th=(img.height/img.width)*ts}else{th=ts;tw=(img.width/img.height)*ts}
+            var imgX = (w-tw)/2;
+            var imgY = 350;
+            x.drawImage(img,imgX,imgY,tw,th);
+            desenha(true);
+        };
+        img.src = dados.foto;
+    }else{
+        x.fillStyle = 'rgba(255,255,255,0.15)';
+        x.beginPath();
+        x.roundRect(w/2-120,h/2-120,240,240,20);
+        x.fill();
+        x.fillStyle = 'rgba(255,255,255,0.6)';
+        x.font = 'bold 80px Arial';
+        x.textAlign = 'center';
+        x.fillText('🎁',w/2,h/2+30);
+        desenha(false);
+    }
+    
+    function desenha(temFoto){
+        x.textAlign = 'center';
+        x.shadowColor = 'rgba(0,0,0,0.5)';
+        x.shadowBlur = 10;
+        
+        var multi = dados.est === 'atraente' ? 1.15 : 1;
+        var yIni = temFoto ? 90 : 100;
+        
+        x.fillStyle = '#fff';
+        x.font = 'bold '+(42*multi)+'px Segoe UI';
+        var titulos = quebra(dados.txt.t, 22);
+        var y = yIni;
+        titulos.forEach(function(linha){
+            x.fillText(linha, w/2, y);
+            y += 48*multi;
+        });
+        
+        x.font = 'bold '+(20*multi)+'px Segoe UI';
+        x.fillStyle = 'rgba(255,255,255,0.85)';
+        var legendas = quebra(dados.txt.l, 38);
+        var espacoL = temFoto ? 26 : 28;
+        legendas.forEach(function(linha){
+            x.fillText(linha, w/2, y);
+            y += espacoL*multi;
+        });
+        
+        x.fillStyle = '#ffd700';
+        x.font = 'bold '+(80*multi)+'px Segoe UI';
+        x.fillText('R$ '+dados.preco, w/2, h-60);
+        
+        x.fillStyle = 'rgba(255,255,255,0.95)';
+        x.font = 'bold '+(36*multi)+'px Segoe UI';
+        x.fillText('★ OFERTA POR TEMPO LIMITADO ★', w/2, h-150);
+    }
+    
+    function quebra(texto, tam){
+        var palavras = texto.split(' ');
+        var linhas = [''];
+        var idx = 0;
+        palavras.forEach(function(p){
+            if(linhas[idx].length + p.length > tam){
+                idx++;
+                linhas[idx] = '';
+            }
+            linhas[idx] += (linhas[idx] ? ' ' : '') + p;
+        });
+        return linhas;
+    }
+}
+
+function baixa(f){
+    var l = document.createElement('a');
+    l.download = 'banner.'+f;
+    l.href = document.getElementById('banner').toDataURL('image/'+f);
+    l.click();
+}
+</script>
+</body>
+</html>
